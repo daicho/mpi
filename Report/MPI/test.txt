@@ -1,0 +1,16 @@
+nsize = 4
+myrank = 1
+my_name_len = 6
+my_name = ayu002
+nsize = 4
+myrank = 0
+my_name_len = 6
+my_name = ayu001
+nsize = 4
+myrank = 3
+my_name_len = 6
+my_name = ayu004
+nsize = 4
+myrank = 2
+my_name_len = 6
+my_name = ayu003

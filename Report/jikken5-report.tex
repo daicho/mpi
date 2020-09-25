@@ -1,0 +1,239 @@
+\documentclass[a4j,titlepage]{jsarticle}
+
+\usepackage[dvipdfmx]{graphicx,xcolor}
+\usepackage[top=20truemm,left=25truemm,right=25truemm]{geometry}
+\usepackage{amsmath}
+\usepackage{here}
+\usepackage{comment}
+\usepackage{url}
+\usepackage{plistings}
+\usepackage{tikz}
+\usepackage[framemethod=tikz]{mdframed}
+
+\renewcommand{\lstlistingname}{リスト}
+
+\newcommand{\chuo}[1]{\multicolumn{1}{|c|}{#1}}
+\newcommand{\inpt}[1]{\underline{#1}\,\setlength{\fboxsep}{1pt}\fbox{\small ↓}}
+\newcommand{\bvec}[1]{\mbox{\boldmath $#1$}}
+
+\lstdefinestyle{C}{
+  language=C,
+  basicstyle=\small\ttfamily,
+  keywordstyle=\color[HTML]{0000E0},
+  stringstyle=\color[HTML]{A31515},
+  commentstyle=\upshape\color[HTML]{008000},
+  frame=trbl,
+  framesep=5pt,
+  columns=[l]{fullflexible},
+  numbers=left,
+  xleftmargin=3zw,
+  lineskip=-0.2ex,
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=4,
+  keepspaces=true
+}
+
+\lstdefinestyle{make}{
+  language=,
+  basicstyle=\small\ttfamily,
+  keywordstyle=\color[HTML]{0000E0},
+  stringstyle=\color[HTML]{A31515},
+  commentstyle=\upshape\color[HTML]{008000},
+  frame=trbl,
+  framesep=5pt,
+  columns=[l]{fullflexible},
+  numbers=left,
+  xleftmargin=3zw,
+  lineskip=-0.2ex,
+  breaklines=true,
+  showstringspaces=false,
+  tabsize=4,
+  keepspaces=true
+}
+
+\lstdefinestyle{text}{
+  language=,
+  basicstyle=\ttfamily,
+  frame=trbl,
+  framesep=5pt,
+  columns=[l]{fullflexible},
+  xleftmargin=3zw,
+  lineskip=-0.2ex,
+  showstringspaces=false,
+  tabsize=4,
+  keepspaces=true
+}
+
+\mdfsetup{
+  skipabove=5pt,
+  innertopmargin=10pt,
+  innerbottommargin=10pt,
+  roundcorner=10pt,
+  font=\ttfamily
+}
+
+
+\begin{document}
+
+
+\begin{titlepage}
+  \title{\huge{工学実験実習V} \\ \LARGE{---MPI---}}
+	\author{学籍番号：16426 \\ 5年 電子情報工学科 24番 \\ 福澤 大地}
+	\date{提出日 : 2020年10月19日}
+  \maketitle
+\end{titlepage}
+
+
+\section{目的}
+MPI (Message Passing Interface)を用いて、複数のコンピュータ間で通信を行いながら、
+並列計算を行うプログラムを作成する。
+その上で、並列計算を行うと通常に比べどれほどの高速化を図れるか、
+並列計算に適したアルゴリズムとはどのようなものなのかなどを検証する。
+
+
+\section{実験環境}
+プログラムの開発、実行を行った環境を表\ref{tb:kan}に示す。
+表\ref{tb:kan}と同様の環境のコンピュータ44台が同一ネットワーク内に接続されており、
+公開鍵認証方式でこれらのコンピュータとSSH通信を行える環境で実験を行った。
+
+\begin{table}[H]
+  \centering
+  \caption{実験環境}
+  \label{tb:kan}
+
+  \begin{tabular}{|l|l|}
+    \hline
+    CPU & Intel Core i5-6600 @ 3.3GHz \\ \hline
+    メモリ & 8GB \\ \hline
+    OS & Ubuntu 14.04 LTS \\ \hline
+    システム & 64bit \\ \hline
+    コンパイラ & GCC 4.8.4 \\ \hline
+    MPIライブラリ & Open MPI 1.10.2 \\ \hline
+  \end{tabular}
+\end{table}
+
+
+\section{MPIとOpen MPIについて}
+MPIとは、並列計算を行うために標準化された企画である。
+これを用いることにより、1台のコンピュータで行っていた計算を複数台のコンピュータで分散して行えるようになる。
+
+Open MPI \cite{bib:1} は、MPIに準拠したライブラリの1つであり、Unix上で利用できる。
+MPIのライブラリは他にもMPICH \cite{bib:2} などがあるが、本実験ではOpen MPIを使用する。
+
+
+\section{実行方法}
+プログラムのコンパルには\texttt{mpicc}コマンド、実行には\texttt{mpirun}コマンドを使用する。
+\texttt{mpicc}コマンドは\texttt{gcc}コマンドと同様の使い方ができ、
+\texttt{-Wall}オプションなどを利用することもできる。
+\texttt{mpirun}コマンドは、\texttt{-machinefile}オプションで使用するコンピュータの名前とCPUの数が記述されたファイル名を、
+\texttt{-np}オプションで使用するコンピュータの数を指定することで、コンパイルしたファイルを実行することができる。
+
+例えば、``com001'' $\sim$ ``com004''という名前のコンピュータのCPUを1つずつ使用する場合は、
+次のように記述されたテキストファイルを適当なファイル名で保存する。
+ここでは、ホームディレクトリに``mymachines''というファイル名で保存することとする。
+
+\begin{lstlisting}[style=text]
+com001 cpu=1
+com002 cpu=1
+com003 cpu=1
+com004 cpu=1
+\end{lstlisting}
+
+そして、``main.c''というファイル名のプログラムをコンパイルし、
+先ほど指定した$4$台のコンピュータで実行する場合には次のようなコマンドを入力する。
+なお、先頭の\texttt{\$}はプロンプトを表す。
+
+\begin{lstlisting}[style=text]
+$ mpicc main.c -o main
+$ mpirun -machinefile ~/mymachines -np 4 main
+\end{lstlisting}
+
+
+\section{MPIのプログラム}
+MPIを用いてプログラムを作成する際は、通常のプログラムとは違い、
+今実行しているコンピュータの数はいくつなのか、自分はどのコンピュータなのかなどを取得する必要がある。
+そのため、MPIのプログラムではリスト\ref{lst:mpi}のように、
+前処理を行うプログラムを記述する必要がある。
+なお、プログラムの終了時には、必ず\texttt{MPI\_Finalize}関数を呼び出さなければならない。
+
+\lstinputlisting[style=C,caption=MPIのプログラム,label=lst:mpi]{./MPI/test.c}
+
+リスト\ref{lst:mpi}のプログラムを4台のコンピュータで実行した結果を、リスト\ref{lst:mpikekka}に示す。
+リスト\ref{lst:mpikekka}を見ると、\texttt{nsize}に実行しているコンピュータの数、\texttt{myrank}に自身の番号、\texttt{my\_name}に自身のコンピュータ名が入っていることが分かる。
+実行結果が\texttt{myrank}の順番で表示されていないのは、プログラムが各コンピュータ上で同時に実行されているためである。
+
+\lstinputlisting[style=text,caption=MPIのプログラムの実行結果,label=lst:mpikekka]{./MPI/test.txt}
+
+
+\section{課題1}
+\subsection{課題内容}
+コマンドライン引数から数値$X$を受け取り、$1 \sim X$までの和を$N$台のCPUで求めるプログラムを作成する。
+$X$と$N$は任意の自然数とする。
+
+\subsection{プログラムリスト}
+課題1のプログラムを、リスト\ref{lst:kadai1}に示す。
+
+\lstinputlisting[style=C,caption=課題1のプログラム,label=lst:kadai1]{./MPI/kadai01.c}
+
+\subsection{プログラムの説明}
+\subsubsection{エラーチェック}
+$26 \sim 47$行目では、与えられた引数が正しいものであるのかチェックを行っている。
+
+本プログラムでは計算をlong long int型で行っている。
+long long int型は64ビットであるため、表せる値の最大値は、$2^{63} - 1$である。
+最終的な計算結果がこの範囲に収まっている必要があるので、
+入力として許容できる最大値を$n$とすると、式(\ref{eq:range})のようにして求められる。
+
+\begin{align}
+  \begin{aligned}
+    \sum^{n}_{k = 1} k &= 2^{63} - 1 \\
+    \frac{1}{2} n (n + 1) &= 2^{63} - 1 \\
+    \frac{1}{2} n^2 + \frac{1}{2} n - 2^{63} + 1 &= 0 \\
+    n &\simeq \pm 4.3 \times 10^9
+    \label{eq:range}
+  \end{aligned}
+\end{align}
+
+式(\ref{eq:range})より、$n$が$4 \times 10^9$以内であれば確実にオーバーフローが起こることはないため、
+これより大きい値が入力された際はエラーとしてプログラムを終了している。
+また、コマンドライン引数が与えられていなかった場合や、
+入力された値が0以下であった場合も同様にエラーとしてプログラムを終了している。
+
+\subsubsection{計算}
+計算は$51 \sim 53$行目で行っている。
+\texttt{myrank}$+1$から始め、\texttt{nsize}間隔で数字を足していく。
+例えば、4台のコンピュータで実行した場合には、各コンピュータが担当する数字は次のようになる。
+このようにすることで、各コンピュータで担当する数字の個数と合計のばらつきを少なくしている。
+
+\begin{description}
+  \item[コンピュータ0] 1, 5, 9,  13, 17, $\dots$
+  \item[コンピュータ1] 2, 6, 10, 14, 18, $\dots$
+  \item[コンピュータ2] 3, 7, 11, 15, 19, $\dots$
+  \item[コンピュータ3] 4, 8, 12, 16, 20, $\dots$
+\end{description}
+
+\subsubsection{集計}
+各コンピュータで行った計算結果の集計は、55行目の\texttt{MPI\_Reduce}関数で行っている。
+このような記述を行うことで、全てのコンピュータの\texttt{sum}の合計を、
+\texttt{ans}に代入することができる。
+
+第4パラメータには演算の種類を指定することができ、56行目の\texttt{MPI\_MAX}では最大値、
+57行目の\texttt{MPI\_MIN}では最小値を取得することができる。
+
+\subsubsection{処理時間の計測}
+MPIには、過去のある地点からの経過時間を取得する\texttt{MPI\_Wtime}という関数が用意されている。
+この関数を処理の開始時と終了時に呼び出し、その差分を取ることで、
+処理に掛かった時間を計測することができる。
+本プログラムでは、49行目で開始時間、59行目で終了時間を取得し、65行目でその差分を表示している。
+
+\subsection{実行結果}
+
+
+\begin{thebibliography}{9}
+  \bibitem{bib:1} OpenMPI: Open Source High Performance Computing, \texttt{\url{https://www.open-mpi.org/}}
+  \bibitem{bib:2} MPICH $|$ High-Performance Portable MPI, \texttt{\url{https://www.mpich.org/}}
+\end{thebibliography}
+
+
+\end{document}
