@@ -157,7 +157,7 @@ alias mpirun='-machinefile ~/mymachines'
 
 \section{MPIのプログラム}
 MPIを用いてプログラムを作成する際は、通常のプログラムとは違い、
-今実行しているコンピュータの数はいくつなのか、自分はどのコンピュータなのかなどを取得する必要がある。
+今実行しているコンピュータの数はいくつなのか、自分はどのコンピュータなのかなどの情報を取得する必要がある。
 そのため、MPIのプログラムではリスト\ref{lst:mpi}のように、
 前処理を行うプログラムを記述する必要がある。
 なお、プログラムの終了時には、必ず\texttt{MPI\_Finalize}関数を呼び出さなければならない。
@@ -236,13 +236,19 @@ MPIには、過去のある地点からの経過時間を取得する\texttt{MPI
 \subsubsection{$1 \sim 54321$の和}
 引数に54321を指定し、4台のコンピュータで実行した場合の結果をリスト\ref{lst:kadai1-1}に示す。
 
+\subsubsection{大きな数を指定した場合}
+入力できる最大値である、$4 \times 10^9$を引数に指定した場合の結果をリスト\ref{lst:kadai1-2}に示す。
+なお、4台のコンピュータで実行した。
+
 \subsubsection{エラーチェック}
-0以下の数を指定した場合の結果をリスト\ref{lst:underzero}、
-
-\subsubsection{コンピュータの数と処理速度の関係}
-
+引数を指定しなかった場合の結果をリスト\ref{lst:nohiki}、0以下の数を指定した場合の結果をリスト\ref{lst:underzero}、
+$4 \times 10^9$を上回る数を指定した場合の結果をリスト\ref{lst:toobig}に示す。
 
 \subsection{考察}
+
+
+\section{課題2}
+
 
 
 \begin{thebibliography}{9}
