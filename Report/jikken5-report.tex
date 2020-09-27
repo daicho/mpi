@@ -140,13 +140,18 @@ com003 cpu=1
 com004 cpu=1
 \end{lstlisting}
 
-そして、``main.c''というファイル名のプログラムをコンパイルし、
+そして、``program.c''というファイル名のプログラムをコンパイルし、
 先ほど指定した$4$台のコンピュータで実行する場合には次のようなコマンドを入力する。
-なお、先頭の\texttt{\$}はプロンプトを表す。
 
 \begin{lstlisting}[style=text]
-$ mpicc main.c -o main
-$ mpirun -machinefile ~/mymachines -np 4 main
+$ mpicc program.c -o program
+$ mpirun -machinefile ~/mymachines -np 4 program
+\end{lstlisting}
+
+なお、今回の環境では次のようにエイリアスを設定することにより、\texttt{-machinefile}オプションを省略し実行できるようにしてある。
+
+\begin{lstlisting}[style=text]
+alias mpirun='-machinefile ~/mymachines'
 \end{lstlisting}
 
 
@@ -200,8 +205,8 @@ long long int型は64ビットであるため、表せる値の最大値は、$2
 また、コマンドライン引数が与えられていなかった場合や、
 入力された値が0以下であった場合も同様にエラーとしてプログラムを終了している。
 
-\subsubsection{計算}
-計算は$51 \sim 53$行目で行っている。
+\subsubsection{演算}
+演算は$51 \sim 53$行目で行っている。
 \texttt{myrank}$+1$から始め、\texttt{nsize}間隔で数字を足していく。
 例えば、4台のコンピュータで実行した場合には、各コンピュータが担当する数字は次のようになる。
 このようにすることで、各コンピュータで担当する数字の個数と合計のばらつきを少なくしている。
@@ -228,6 +233,16 @@ MPIには、過去のある地点からの経過時間を取得する\texttt{MPI
 本プログラムでは、49行目で開始時間、59行目で終了時間を取得し、65行目でその差分を表示している。
 
 \subsection{実行結果}
+\subsubsection{$1 \sim 54321$の和}
+引数に54321を指定し、4台のコンピュータで実行した場合の結果をリスト\ref{lst:kadai1-1}に示す。
+
+\subsubsection{エラーチェック}
+0以下の数を指定した場合の結果をリスト\ref{lst:underzero}、
+
+\subsubsection{コンピュータの数と処理速度の関係}
+
+
+\subsection{考察}
 
 
 \begin{thebibliography}{9}
