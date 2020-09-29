@@ -86,7 +86,7 @@
 
 
 \section{目的}
-MPI (Message Passing Interface)を用いて、複数のコンピュータ間で通信を行いながら、
+MPI (Message Passing Interface)を用いて、複数のCPU間で通信を行いながら、
 並列計算を行うプログラムを作成する。
 その上で、並列計算を行うと通常に比べどれほどの高速化を図れるか、
 並列計算に適したアルゴリズムとはどのようなものなのかなどを検証する。
@@ -116,7 +116,7 @@ MPI (Message Passing Interface)を用いて、複数のコンピュータ間で�
 
 \section{MPIとOpen MPIについて}
 MPIとは、並列計算を行うために標準化された企画である。
-これを用いることにより、1台のコンピュータで行っていた計算を複数台のコンピュータで分散して行えるようになる。
+これを用いることにより、1個のCPUで行っていた計算を複数のCPUで分散して行えるようになる。
 
 Open MPI \cite{bib:1} は、MPIに準拠したライブラリの1つであり、Unix上で利用できる。
 MPIのライブラリは他にもMPICH \cite{bib:2} などがあるが、本実験ではOpen MPIを使用する。
@@ -127,7 +127,7 @@ MPIのライブラリは他にもMPICH \cite{bib:2} などがあるが、本実�
 \texttt{mpicc}コマンドは\texttt{gcc}コマンドと同様の使い方ができ、
 \texttt{-Wall}オプションなどを利用することもできる。
 \texttt{mpirun}コマンドは、\texttt{-machinefile}オプションで使用するコンピュータの名前とCPUの数が記述されたファイル名を、
-\texttt{-np}オプションで使用するコンピュータの数を指定することで、コンパイルしたファイルを実行することができる。
+\texttt{-np}オプションで使用するCPUの数を指定することで、コンパイルしたファイルを実行することができる。
 
 例えば、``com001'' $\sim$ ``com004''という名前のコンピュータのCPUを1つずつ使用する場合は、
 次のように記述されたテキストファイルを適当なファイル名で保存する。
@@ -141,7 +141,7 @@ com004 cpu=1
 \end{lstlisting}
 
 そして、``program.c''というファイル名のプログラムをコンパイルし、
-先ほど指定した$4$台のコンピュータで実行する場合には次のようなコマンドを入力する。
+先ほど指定した$4$個のCPU実行する場合には次のようなコマンドを入力する。
 
 \begin{lstlisting}[style=text]
 $ mpicc program.c -o program
@@ -157,16 +157,16 @@ alias mpirun='-machinefile ~/mymachines'
 
 \section{MPIのプログラム}
 MPIを用いてプログラムを作成する際は、通常のプログラムとは違い、
-今実行しているコンピュータの数はいくつなのか、自分はどのコンピュータなのかなどの情報を取得する必要がある。
+今実行しているCPUの数はいくつなのか、自分はどのCPUなのかなどの情報を取得する必要がある。
 そのため、MPIのプログラムではリスト\ref{lst:mpi}のように、
 前処理を行うプログラムを記述する必要がある。
 なお、プログラムの終了時には、必ず\texttt{MPI\_Finalize}関数を呼び出さなければならない。
 
 \lstinputlisting[style=C,caption=MPIのプログラム,label=lst:mpi]{./MPI/test.c}
 
-リスト\ref{lst:mpi}のプログラムを4台のコンピュータで実行した結果を、リスト\ref{lst:mpikekka}に示す。
-リスト\ref{lst:mpikekka}を見ると、\texttt{nsize}に実行しているコンピュータの数、\texttt{myrank}に自身の番号、\texttt{my\_name}に自身のコンピュータ名が入っていることが分かる。
-実行結果が\texttt{myrank}の順番で表示されていないのは、プログラムが各コンピュータ上で同時に実行されているためである。
+リスト\ref{lst:mpi}のプログラムを4個のCPUで実行した結果を、リスト\ref{lst:mpikekka}に示す。
+リスト\ref{lst:mpikekka}を見ると、\texttt{nsize}に実行しているCPUの数、\texttt{myrank}に自身の番号、\texttt{my\_name}に自身のコンピュータ名が入っていることが分かる。
+実行結果が\texttt{myrank}の順番で表示されていないのは、プログラムが各CPU上で同時に実行されているためである。
 
 \lstinputlisting[style=text,caption=MPIのプログラムの実行結果,label=lst:mpikekka]{./MPI/test.txt}
 
@@ -206,39 +206,38 @@ long long int型は64ビットであるため、表せる値の最大値は、$2
 入力された値が0以下であった場合も同様にエラーとしてプログラムを終了している。
 
 \subsubsection{演算}
-演算は$51 \sim 53$行目で行っている。
-\texttt{myrank}$+1$から始め、\texttt{nsize}間隔で数字を足していく。
-例えば、4台のコンピュータで実行した場合には、各コンピュータが担当する数字は次のようになる。
-このようにすることで、各コンピュータで担当する数字の個数と合計のばらつきを少なくしている。
+演算は$51 \sim 53$行目で行っており、\texttt{myrank}$+1$から始め、\texttt{nsize}間隔で数字を足している。
+例えば、4個のCPUで実行した場合には、各CPUが担当する数字は次のようになる。
+このようにすることで、各CPUで担当する数字の個数と合計のばらつきを少なくしている。
 
 \begin{description}
-  \item[コンピュータ0] 1, 5, 9,  13, 17, $\dots$
-  \item[コンピュータ1] 2, 6, 10, 14, 18, $\dots$
-  \item[コンピュータ2] 3, 7, 11, 15, 19, $\dots$
-  \item[コンピュータ3] 4, 8, 12, 16, 20, $\dots$
+  \item[CPU 0] 1, 5, 9,  13, 17, $\dots$
+  \item[CPU 1] 2, 6, 10, 14, 18, $\dots$
+  \item[CPU 2] 3, 7, 11, 15, 19, $\dots$
+  \item[CPU 3] 4, 8, 12, 16, 20, $\dots$
 \end{description}
 
 \subsubsection{集計}
-各コンピュータで行った計算結果の集計は、55行目の\texttt{MPI\_Reduce}関数で行っている。
-このような記述を行うことで、全てのコンピュータの\texttt{sum}の合計を、
+各CPUで行った計算結果の集計は、55行目の\texttt{MPI\_Reduce}関数で行っている。
+このような記述を行うことで、全てのCPUの\texttt{sum}の合計を、
 \texttt{ans}に代入することができる。
 
 第4パラメータには演算の種類を指定することができ、56行目の\texttt{MPI\_MAX}では最大値、
 57行目の\texttt{MPI\_MIN}では最小値を取得することができる。
 
 \subsubsection{処理時間の計測}
-MPIには、過去のある地点からの経過時間を取得する\texttt{MPI\_Wtime}という関数が用意されている。
+MPIには、過去のある地点からの経過時間を取得する\texttt{MPI\_Wtime}関数が用意されている。
 この関数を処理の開始時と終了時に呼び出し、その差分を取ることで、
 処理に掛かった時間を計測することができる。
 本プログラムでは、49行目で開始時間、59行目で終了時間を取得し、65行目でその差分を表示している。
 
 \subsection{実行結果}
 \subsubsection{$1 \sim 54321$の和}
-引数に54321を指定し、4台のコンピュータで実行した場合の結果をリスト\ref{lst:kadai1-1}に示す。
+引数に54321を指定し、4個のCPUで実行した場合の結果をリスト\ref{lst:kadai1-1}に示す。
 
 \subsubsection{大きな数を指定した場合}
 入力できる最大値である、$4 \times 10^9$を引数に指定した場合の結果をリスト\ref{lst:kadai1-2}に示す。
-なお、4台のコンピュータで実行した。
+なお、4個のCPUで実行した。
 
 \subsubsection{エラーチェック}
 引数を指定しなかった場合の結果をリスト\ref{lst:nohiki}、0以下の数を指定した場合の結果をリスト\ref{lst:underzero}、
@@ -248,6 +247,77 @@ $4 \times 10^9$を上回る数を指定した場合の結果をリスト\ref{lst
 
 
 \section{課題2}
+\subsection{課題内容}
+課題1で作成したプログラムを用いて、並列計算の効果を測定する。
+CPUの数$N$を変えながら処理時間を測定し、その結果をグラフにして考察する。
+
+\subsection{プログラムリスト}
+
+\subsection{プログラムの説明}
+
+\subsection{実行結果}
+
+\subsection{考察}
+
+
+\section{課題3}
+\subsection{課題内容}
+$N$個のCPUでモンテカルロシミュレーションを並列処理するプログラムを作成する。
+乱数の種はCPUごとに異なるようにする。
+
+\subsection{プログラムリスト}
+
+\subsection{プログラムの説明}
+
+\subsection{実行結果}
+
+\subsection{考察}
+
+
+\section{課題4}
+\subsection{課題内容}
+以下の処理を実行するプログラムを作成する。
+
+\begin{enumerate}
+  \item 整数配列\texttt{a\[\] = \{3, 1, 4, 1, 5, 9\}}をCPU 0で定義する。
+  \item CPU$1 \sim 9$のそれぞれで適当な乱数\texttt{R}を1個ずつ発生させる。
+  \item \texttt{a\[\]}を9台のCPUに\texttt{MPI\_Send}で送信し、
+        受信側では\texttt{a\[\]}のそれぞれの要素に手順2で発生させた$R$を加えた配列\texttt{b\[\]}を作る。
+  \item 9台のCPUからそれぞれが持っている\texttt{R}と\texttt{b}をCPU 0に送り返す。
+  \item CPU 0でCPU番号とともに送り返されてきた\texttt{R}と\texttt{b}を表示する。
+\end{enumerate}
+
+\subsection{プログラムリスト}
+
+\subsection{プログラムの説明}
+
+\subsection{実行結果}
+
+\subsection{考察}
+
+
+\section{課題5}
+\subsection{課題内容}
+
+\subsection{プログラムリスト}
+
+\subsection{プログラムの説明}
+
+\subsection{実行結果}
+
+\subsection{考察}
+
+
+\section{課題6}
+\subsection{課題内容}
+
+\subsection{プログラムリスト}
+
+\subsection{プログラムの説明}
+
+\subsection{実行結果}
+
+\subsection{考察}
 
 
 
