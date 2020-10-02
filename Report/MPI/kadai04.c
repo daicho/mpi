@@ -23,6 +23,7 @@ int main(int argc, char **argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
     MPI_Get_processor_name(my_name, &my_name_len);
 
+    // 処理開始時間を取得
     start_t = MPI_Wtime();
 
     // シード値決定
@@ -56,12 +57,12 @@ int main(int argc, char **argv) {
 
             for (j = 0; j < N + 1; j++)
                 printf(" %d", b[j]);
-            printf("\n");
+            printf("\n\n");
         }
 
         // 処理時間を表示
         finish_t = MPI_Wtime();
-        printf("time: %.4f s\n", finish_t - start_t);
+        printf("time: %.10f s\n", finish_t - start_t);
     } else {
         int a[N];
         int R;

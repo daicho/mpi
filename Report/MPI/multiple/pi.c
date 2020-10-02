@@ -30,22 +30,25 @@ int main(int argc, char **argv) {
     MPI_Get_processor_name(my_name, &my_name_len);
 
     if (argc <= 1) {
-        printf("引数が与えられていません。\n");
+        if (myrank == 0)
+            printf("引数が与えられていません。\n");
 
         MPI_Finalize();
         return 0;
     }
 
+    // 引数を整数型に変換
     n = atoi(argv[1]);
 
     if (n <= 0) {
-        printf("引数の値が不正です。\n");
+        if (myrank == 0)
+            printf("引数の値が小さすぎます。\n");
 
         MPI_Finalize();
         return 0;
     }
 
-    // 計測開始
+    // 処理開始時間を取得
     start_t = MPI_Wtime();
 
     // 精度
@@ -88,8 +91,6 @@ int main(int argc, char **argv) {
         for (j = myrank; j < n; j += nsize) {
             struct NUMBER bunbo;
             struct NUMBER calc;
-
-            printf("CPU %d (i, j) = (%d, %d)\n", myrank, i, j);
 
             // 分母の計算
             setInt(&bunbo, 2 * j + 1);
@@ -136,10 +137,12 @@ int main(int argc, char **argv) {
             copyNumber(&tmp, &ans);
         }
 
+        // 処理終了時間を取得
         finish_t = MPI_Wtime();
 
-        printf("time: %.4f s\n", finish_t - start_t);
+        // 表示
         dispNumber(&ans);
+        printf("time: %.4f s\n", finish_t - start_t);
     } else {
         MPI_Send(sum.n, KETA, MPI_INTEGER, 0, 100 + myrank, MPI_COMM_WORLD);
         MPI_Send(&sum.sign, 1, MPI_INTEGER, 0, 200 + myrank, MPI_COMM_WORLD);

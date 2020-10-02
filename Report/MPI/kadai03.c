@@ -28,22 +28,25 @@ int main(int argc, char **argv) {
     MPI_Get_processor_name(my_name, &my_name_len);
 
     if (argc <= 1) {
-        printf("引数が与えられていません。\n");
+        if (myrank == 0)
+            printf("引数が与えられていません。\n");
 
         MPI_Finalize();
         return 0;
     }
 
-    // 試行回数
+    // 引数を整数型に変換
     n = atoll(argv[1]);
 
     if (n <= 0) {
-        printf("引数の値が不正です。\n");
+        if (myrank == 0)
+            printf("引数の値が小さすぎます。\n");
 
         MPI_Finalize();
         return 0;
     }
 
+    // 処理開始時間を取得
     start_t = MPI_Wtime();
 
     // シード値決定
@@ -56,7 +59,7 @@ int main(int argc, char **argv) {
 
     printf("CPU %02d seed: %u\n", myrank, seed);
 
-    // 処理開始
+    // シミュレーション
     for (i = 0; i < n / nsize; i++) {
         ld x = (random() / ((ld)RAND_MAX + 1) + myrank) / nsize;
         ld y = random() / ((ld)RAND_MAX + 1);
@@ -82,11 +85,12 @@ int main(int argc, char **argv) {
 
         ld ans = (ld)4.0 * sum / n;
 
+        // 処理終了時間を取得
         finish_t = MPI_Wtime();
 
         printf("answer: %.20Lf\n", ans);
-        printf("error : %.20Lf\n", ans - M_PI);
-        printf("time  : %.4f s\n", finish_t - start_t);
+        printf("error: %.20Lf\n", ans - M_PI);
+        printf("time: %.10f s\n", finish_t - start_t);
     }
 
     MPI_Finalize();
