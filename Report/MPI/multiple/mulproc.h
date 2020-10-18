@@ -34,8 +34,8 @@ int  setString(struct NUMBER *, char *);
 int  setSign(struct NUMBER *, int);
 int  getSign(const struct NUMBER *);
 
-int  mulByBase(const struct NUMBER *, struct NUMBER *);
-int  divByBase(const struct NUMBER *, struct NUMBER *);
+int  mulBy10(const struct NUMBER *, struct NUMBER *);
+int  divBy10(const struct NUMBER *, struct NUMBER *);
 
 int  add(const struct NUMBER *, const struct NUMBER *, struct NUMBER *);
 int  sub(const struct NUMBER *, const struct NUMBER *, struct NUMBER *);

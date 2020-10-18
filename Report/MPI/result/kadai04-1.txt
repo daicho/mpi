@@ -1,3 +1,4 @@
+$ mpirun -np 10 ./a.out
 CPU 01
 R: 75
 b: 3 1 4 1 5 9 75

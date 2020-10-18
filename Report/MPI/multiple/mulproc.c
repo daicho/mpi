@@ -297,7 +297,7 @@ int getSign(const struct NUMBER *a)
 //    0 ... 正常終了
 //   -1 ... オーバーフロー
 //
-int mulByBase(const struct NUMBER *a, struct NUMBER *b)
+int mulBy10(const struct NUMBER *a, struct NUMBER *b)
 {
     int i;
 
@@ -320,7 +320,7 @@ int mulByBase(const struct NUMBER *a, struct NUMBER *b)
 // 戻り値：
 //   aをBASEで割った余り
 //
-int divByBase(const struct NUMBER *a, struct NUMBER *b)
+int divBy10(const struct NUMBER *a, struct NUMBER *b)
 {
     int i;
 
@@ -556,7 +556,7 @@ int divide(const struct NUMBER *a, const struct NUMBER *b, struct NUMBER *c, str
             if (numComp(&e, b) != -1)
                 break;
 
-            mulByBase(&e, &f);
+            mulBy10(&e, &f);
             copyNumber(&f, &e);
             e.n[0] = d->n[i];
         }
@@ -565,7 +565,7 @@ int divide(const struct NUMBER *a, const struct NUMBER *b, struct NUMBER *c, str
         c->n[i + 1] = f.n[0];
 
         for (; i >= 0; i--) {
-            mulByBase(d, &f);
+            mulBy10(d, &f);
             copyNumber(&f, d);
             d->n[0] = a->n[i];
         }
@@ -612,13 +612,13 @@ int simpleDivide(const struct NUMBER *a, const struct NUMBER *b, struct NUMBER *
 
         // できるだけ大きな数をまとめて引く
         while (1) {
-            mulByBase(&f, &e);
+            mulBy10(&f, &e);
             if (numComp(d, &e) != 1)
                 break;
 
             copyNumber(&e, &f);
 
-            mulByBase(&g, &e);
+            mulBy10(&g, &e);
             copyNumber(&e, &g);
         }
 

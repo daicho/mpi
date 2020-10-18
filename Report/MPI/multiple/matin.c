@@ -101,7 +101,7 @@ int main(int argc, char **argv) {
             divide(&bunshi, &bunbo, &calc, &tmp);
 
             // 加減算
-            if (j % 2 == 0)
+            if ((j % 2 == 0) ^ (i != 0))
                 add(&sum, &calc, &tmp);
             else
                 sub(&sum, &calc, &tmp);

@@ -4,8 +4,8 @@
 #include <unistd.h>
 #include <mpi.h>
 
-#define H 50
-#define W 20
+#define H 10
+#define W 2
 
 int main(int argc, char **argv) {
     int nsize;
