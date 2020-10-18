@@ -46,6 +46,14 @@ int main(int argc, char **argv) {
         return 0;
     }
 
+    if (n % nsize != 0) {
+        if (myrank == 0)
+            printf("引数の値はCPUの個数の倍数を入力してください。\n");
+
+        MPI_Finalize();
+        return 0;
+    }
+
     // 処理開始時間を取得
     start_t = MPI_Wtime();
 
@@ -74,15 +82,7 @@ int main(int argc, char **argv) {
     printf("CPU %02d count: %lld\n", myrank, cnt);
 
     if (myrank == 0) {
-        // 端数の処理
-        for (i = 0; i < n % nsize; i++) {
-            ld x = random() / ((ld)RAND_MAX + 1);
-            ld y = random() / ((ld)RAND_MAX + 1);
-
-            if (x * x + y * y < 1)
-                sum++;
-        }
-
+        // 円周率を算出
         ld ans = (ld)4.0 * sum / n;
 
         // 処理終了時間を取得

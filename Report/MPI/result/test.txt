@@ -1,3 +1,4 @@
+$ mpirun -np 4 ./a.out
 nsize = 4
 myrank = 1
 my_name_len = 6

@@ -115,7 +115,7 @@ MPI (Message Passing Interface)を用いて、複数のCPU間で通信を行い�
 
 
 \section{MPIとOpen MPIについて}
-MPIとは、並列計算を行うために標準化された企画である。
+MPIとは、並列計算を行うために標準化された規格である。
 これを用いることにより、1個のCPUで行っていた計算を複数のCPUで分散して行えるようになる。
 
 Open MPI \cite{bib:1} は、MPIに準拠したライブラリの1つであり、Unix上で利用できる。
@@ -144,8 +144,8 @@ com004 cpu=1
 先ほど指定した$4$個のCPU実行する場合には次のようなコマンドを入力する。
 
 \begin{lstlisting}[style=text]
-$ mpicc program.c -o program
-$ mpirun -machinefile ~/mymachines -np 4 program
+$ mpicc program.c
+$ mpirun -machinefile ~/mymachines -np 4 ./a.out
 \end{lstlisting}
 
 なお、今回の環境では次のようにエイリアスを設定することにより、\texttt{-machinefile}オプションを省略し実行できるようにしてある。
@@ -168,7 +168,7 @@ MPIを用いてプログラムを作成する際は、通常のプログラム�
 リスト\ref{lst:mpikekka}を見ると、\texttt{nsize}に実行しているCPUの数、\texttt{myrank}に自身の番号、\texttt{my\_name}に自身のコンピュータ名が入っていることが分かる。
 実行結果が\texttt{myrank}の順番で表示されていないのは、プログラムが各CPU上で同時に実行されているためである。
 
-\lstinputlisting[style=text,caption=MPIのプログラムの実行結果,label=lst:mpikekka]{./MPI/test.txt}
+\lstinputlisting[style=text,caption=MPIのプログラムの実行結果,label=lst:mpikekka]{./MPI/result/test.txt}
 
 
 \section{課題1}
@@ -251,13 +251,65 @@ $4 \times 10^9$を上回る数を指定した場合の結果をリスト\ref{lst
 課題1で作成したプログラムを用いて、並列計算の効果を測定する。
 CPUの数$N$を変えながら処理時間を測定し、その結果をグラフにして考察する。
 
-\subsection{プログラムリスト}
-
-\subsection{プログラムの説明}
-
 \subsection{実行結果}
+CPUの数$N$を1$\sim$30個に増やしながら処理時間を測定した。
+全てのCPUが作業が行われていない状態で測定を行い、それぞれ10回の平均値を取った。
+
+それぞれのCPUの個数についての処理時間についてまとめたものを表\ref{tb:kadai2}に、グラフにプロットしたものを図\ref{fig:kadai2}に示す。
+
+\begin{table}[H]
+  \centering
+  \caption{CPUの個数と処理時間}
+  \label{tb:kadai2}
+
+  \begin{tabular}{|r|r|r|}
+    \hline
+    \chuo{CPU数 [個]} & \chuo{処理時間 [ms]} & \chuo{CPU1個の処理時間に対する短縮率} \\ \hline \hline
+     1 & 7663 &  1.00 \\ \hline
+     2 & 3842 &  1.99 \\ \hline
+     3 & 2572 &  2.98 \\ \hline
+     4 & 1929 &  3.97 \\ \hline
+     5 & 1544 &  4.96 \\ \hline
+     6 & 1289 &  5.94 \\ \hline
+     7 & 1113 &  6.89 \\ \hline
+     8 &  971 &  7.89 \\ \hline
+     9 &  862 &  8.89 \\ \hline
+    10 &  780 &  9.83 \\ \hline
+    11 &  711 & 10.78 \\ \hline
+    12 &  652 & 11.76 \\ \hline
+    13 &  613 & 12.49 \\ \hline
+    14 &  576 & 13.29 \\ \hline
+    15 &  536 & 14.29 \\ \hline
+    16 &  492 & 15.58 \\ \hline
+    17 &  466 & 16.46 \\ \hline
+    18 &  440 & 17.42 \\ \hline
+    19 &  415 & 18.48 \\ \hline
+    20 &  397 & 19.29 \\ \hline
+    21 &  391 & 19.61 \\ \hline
+    22 &  370 & 20.71 \\ \hline
+    23 &  346 & 22.17 \\ \hline
+    24 &  328 & 23.36 \\ \hline
+    25 &  319 & 24.05 \\ \hline
+    26 &  309 & 24.83 \\ \hline
+    27 &  300 & 25.51 \\ \hline
+    28 &  296 & 25.91 \\ \hline
+    29 &  282 & 27.19 \\ \hline
+    30 &  266 & 28.77 \\ \hline
+  \end{tabular}
+\end{table}
+
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=12cm]{./MPI/kadai02-result/kadai02.png}
+  \caption{CPUの個数と処理時間の関係}
+  \label{fig:kadai2}
+\end{figure}
 
 \subsection{考察}
+図\ref{fig:kadai2}を見ると、反比例のグラフとなっている。
+また、表\ref{tb:kadai2}のCPU1個の処理時間に対する短縮率より、おおよそCPUの数の分だけ処理時間の短縮がされていることが分かる。
+このことから、課題1のような、ほとんど通信を行わない単純な並列計算を行うと、投入したCPUの数の分だけ効率化が行えると言える。
 
 
 \section{課題3}
@@ -266,8 +318,32 @@ $N$個のCPUでモンテカルロシミュレーションを並列処理する�
 乱数の種はCPUごとに異なるようにする。
 
 \subsection{プログラムリスト}
+課題3のプログラムを、リスト\ref{lst:kadai3}に示す。
+
+\lstinputlisting[style=C,caption=課題3のプログラム,label=lst:kadai3]{./MPI/kadai03.c}
 
 \subsection{プログラムの説明}
+\subsubsection{エラーチェック}
+$30 \sim 55$行目では、与えられた引数が正しいものであるのかチェックを行っている。
+
+本プログラムでは、円を分割したものを各CPUで分担してシミュレーションを行うため、
+各CPUでプロットする点は等しい必要がある。
+そこで、コマンドライン引数から受け取った値がCPUの個数の倍数でない場合は、エラーとしてプログラムを終了している。
+また、コマンドライン引数が与えられていなかった場合や、
+入力された値が0以下であった場合も同様にエラーとしてプログラムを終了している。
+
+\sebsubsection{シード値の決定}
+ランダムな点をプロットするために、各CPUでシード値を決定する必要がある。
+通常のプログラムであれば、現在時刻をシード値とするのが一般的であるが、並列計算のプログラムでその手法を取ると、各CPUでシード値が同じとなってしまう可能性がある。
+同じシード値となると各CPUで全く同じ乱数列が生成されることとなるため、ランダム性が失われてしまうという問題がある。
+
+そこで本プログラムでは、$61 \sim 66$行目のように各CPUについて、時刻をシード値とし\texttt{myrank}の回数だけ乱数を生成したものを新たなシード値として採用することでこの問題を解決している。
+例えば、CPU0とCPU1が同じシード値$T$となってしまったとする。
+この場合、CPU0では$T$をシード値として生成された1つ目の乱数を新しいシード値として採用し、
+CPU1では2つ目の乱数を新しいシード値として採用する。
+こうすることで、シード値として使う時刻が同じ値になってしまった場合にも、各CPUで違うシード値を使用することができる。
+
+\subsubsection{シミュレーション}
 
 \subsection{実行結果}
 
